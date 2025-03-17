@@ -139,8 +139,8 @@ class ShuffleAttention(nn.Module):
         self.bn1 = nn.BatchNorm2d(mip)
         self.act = h_swish()
         
-        self.conv_h = nn.Conv2d(mip, 512, kernel_size=1, stride=1, padding=0)
-        self.conv_w = nn.Conv2d(mip, 512, kernel_size=1, stride=1, padding=0)
+        self.conv_h = nn.Conv2d(mip, channel, kernel_size=1, stride=1, padding=0)
+        self.conv_w = nn.Conv2d(mip, channel, kernel_size=1, stride=1, padding=0)
         
 
     def forward(self, x):
