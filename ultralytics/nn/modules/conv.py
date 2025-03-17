@@ -129,7 +129,7 @@ class h_swish(nn.Module):
 
 class ShuffleAttention(nn.Module):
     def __init__(self, channel=512 ,  reduction=16):
-        super(CoordAtt, self).__init__()
+        super(ShuffleAttention, self).__init__()
         self.pool_h = nn.AdaptiveAvgPool2d((None, 1))
         self.pool_w = nn.AdaptiveAvgPool2d((1, None))
 
