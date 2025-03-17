@@ -6,7 +6,8 @@ import math
 import numpy as np
 import torch
 import torch.nn as nn
-
+from torch.nn import init
+from torch.nn.parameter import Parameter
 __all__ = (
     "Conv",
     "Conv2",
