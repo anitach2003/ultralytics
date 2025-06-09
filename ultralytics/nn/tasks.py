@@ -1132,6 +1132,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             SCDown,
             C2fCIB,
             A2C2f,
+            
         }
     )
     repeat_modules = frozenset(  # modules with 'repeat' arguments
@@ -1151,6 +1152,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             C2fCIB,
             C2PSA,
             A2C2f,
+            ShuffleAttention,
         }
     )
     for i, (f, n, m, args) in enumerate(d["backbone"] + d["head"]):  # from, number, module, args
@@ -1170,22 +1172,11 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             c1, c2 = ch[f], args[0]
             if c2 != nc:  # if c2 not equal to number of classes (i.e. for Classify() output)
                 c2 = make_divisible(min(c2, max_channels) * width, 8)
-            if m is C2fAttn:  # set 1) embed channels and 2) num heads
-                args[1] = make_divisible(min(args[1], max_channels // 2) * width, 8)
-                args[2] = int(max(round(min(args[2], max_channels // 2 // 32)) * width, 1) if args[2] > 1 else args[2])
 
             args = [c1, c2, *args[1:]]
-            if m in repeat_modules:
+            if m in (BottleneckCSP, C1, C2, C2f, C3, C3TR, C3Ghost, C3x, RepC3):
                 args.insert(2, n)  # number of repeats
                 n = 1
-            if m is C3k2:  # for M/L/X sizes
-                legacy = False
-                if scale in "mlx":
-                    args[3] = True
-            if m is A2C2f:
-                legacy = False
-                if scale in "lx":  # for L/X sizes
-                    args.extend((True, 1.2))
         elif m is AIFI:
             args = [ch[f], *args]
         elif m in frozenset({HGStem, HGBlock}):
@@ -1194,11 +1185,6 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             if m is HGBlock:
                 args.insert(4, n)  # number of repeats
                 n = 1
-        elif m is ShuffleAttention:
-            c1, c2 = ch[f], args[0]
-            if c2 != nc:
-                c2 = make_divisible(min(c2, max_channels) * width, 8)
-            args = [c1, *args[1:]]
         elif m is ResNetLayer:
             c2 = args[1] if args[3] else args[1] * 4
         elif m is torch.nn.BatchNorm2d:
